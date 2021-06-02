@@ -20,18 +20,14 @@ public class ResourcePile : MonoBehaviour
         this.capacity = capacity;
     }
 
-    private void OnMouseDown() 
-    {
-        
-    }
-
     private void displayResourceInfo()
     {
         
     }
 
-    public void getResource()
+    public Resource getResource()
     {
         capacity--;
+        return this.resourceType;
     }
 }

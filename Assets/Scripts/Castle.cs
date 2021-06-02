@@ -10,8 +10,8 @@ public class Castle : MonoBehaviour
     float y;
 
     int[] resources;
-    List<Unit> units;
-    int hunger = 3;
+    List<Unit> units = new List<Unit>();
+    int hunger = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -19,11 +19,12 @@ public class Castle : MonoBehaviour
         x = this.transform.localPosition.x;
         y = this.transform.localPosition.y;
         resources = new int[2];
-        setResourceCount(Resource.Food,1000);
-        setResourceCount(Resource.Metal, 100);
 
-        InvokeRepeating("SpamUnits", 1.0f, 5f);
-        InvokeRepeating("SpamUnits", 1.0f, 4f);
+        InvokeRepeating("ConsumeFood", 1.0f, 4f);
+
+        //stuff for testing
+        setResourceCount(Resource.Food, 1000);
+        setResourceCount(Resource.Metal, 100);
     }
 
     void changeResourceCount(Resource resource, int change)
@@ -42,29 +43,40 @@ public class Castle : MonoBehaviour
         return resources[((int)resource) - 1];
     }
 
-    void SpamUnits()
+    public void addResource(Resource resource)
     {
-        Eat(-5);
+        changeResourceCount(resource, 1);
     }
 
     void ConsumeFood()
     {
-        Eat(-hunger);
+        Eat(hunger);
     }
 
     bool Eat(int food)
     {
         if (resources[((int)Resource.Food)] >= food)
         {
-            changeResourceCount(Resource.Food, food);
+            changeResourceCount(Resource.Food, -food);
             return true;
         }
         return false;
     }
 
-    public void Spawn(GameObject unitPrefab)
+    public void HireUnit(GameObject unitObj)
     {
         Vector2 spawnPoint = new Vector2(x, y);
-        Instantiate(unitPrefab, spawnPoint, Quaternion.identity);
+        GameObject newObj = Instantiate(unitObj, spawnPoint, Quaternion.identity);
+        Unit unit = newObj.GetComponent<Unit>();
+
+        if (Eat(unit.getHunger() * 3))
+        {
+            this.hunger += unit.getHunger();
+            units.Add(unit);
+        }
+        else
+        {
+            GameObject.Destroy(newObj);
+        }
     }
 }
