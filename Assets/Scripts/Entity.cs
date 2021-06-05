@@ -1,71 +1,64 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-public class Entity : MonoBehaviour
-{
-    [SerializeField]
-    Slider hpSlider;
-    public Action<Entity> onDestroy;
+public class Entity : MonoBehaviour {
+    [SerializeField] Slider hpSlider;
+    public Action<Entity> OnDestroy;
 
-    int hp = 10;
-    int maxHP = 10;
-    int damage = 2;
-    float attackCD = 0.8f;
-    float currentCD = 0.0f;
+    int _hp = 10;
+    const int MaxHp = 10;
+    const int Damage = 2;
+    const float AttackCd = 0.8f;
+    public float CurrentCd { get; private set; } = 0.0f;
 
-    float attackRange = 1f;
-    public float getAttackRange() { return attackRange; }
-    float visionRange = 3.5f;
-    public float getVisionRange() { return visionRange; }
-    float movementSpeed = 0.2f;
-    public float getMovementSpeed() { return movementSpeed; }
+    public float AttackRange { get; } = 1f;
 
-    private void Start()
-    {
+    public float VisionRange { get; } = 3.5f;
+
+    public float MovementSpeed { get; } = 0.2f;
+
+    private void Start() {
         // hpSlider.maxValue = maxHP;
         // hpSlider.value = hp;
         // hpSlider.interactable = false;
     }
 
-    private void FixedUpdate()
-    {
-        if (currentCD > 0)
-        {
-            currentCD -= Time.fixedDeltaTime;
-            if (currentCD < 0)
-                currentCD = 0;
+    void FixedUpdate() {
+        if (CurrentCd == 0) {
+            return;
+        }
+
+        CurrentCd -= Time.fixedDeltaTime;
+        if (CurrentCd < 0) {
+            CurrentCd = 0;
         }
     }
-    void Die()
-    {
-        onDestroy(this);
-        GameObject.Destroy(this, 0.2f);
+
+    void Die() {
+        OnDestroy(this);
+        Destroy(this);
     }
-    public bool Attack(Entity entity)
-    {
-        if (currentCD == 0)
-        {
-            entity.ReduceHP(damage);
-            currentCD = attackCD;
-            return true;
+
+    public bool Attack(Entity entity) {
+        if (CurrentCd != 0) {
+            return false;
         }
-        return false;
+
+        entity.ReduceHp(Damage);
+        CurrentCd = AttackCd;
+        return true;
     }
 
-    public float GetCD() { return currentCD; }
-
-    void ReduceHP(int amount)
-    {
-        hp -= amount;
+    void ReduceHp(int amount) {
+        _hp -= amount;
         //hpSlider.value = hp;
-        if (hp < 0)
+        if (_hp < 0) {
             Die();
+        }
     }
-    public void RestoreHP()
-    {
-        hp = maxHP;
+
+    public void RestoreHp() {
+        _hp = MaxHp;
     }
 }

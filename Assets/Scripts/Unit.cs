@@ -1,43 +1,40 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using ResourceLogic;
 using UnityEngine;
 
-public class Unit : Entity
-{
-    Dictionary<ResourceType, int> resources;
-    int hunger = 1;
-    int cost = 3;
-    int resourceCapacity = 3;
+public class Unit : Entity {
+    Dictionary<ResourceType, int> _resources;
+    const int ResourceCapacity = 3;
 
-    int resourceRange;
+    public float GetInteractionRange { get; } = .5f;
+    public int GetHunger { get; } = 1;
+    public int GetCost { get; } = 3;
 
-    public int getResourceRange() { return resourceRange; }
-
-    private void Start()
-    {
-        resources = new Dictionary<ResourceType, int>();
+    void Start() {
+        _resources = new Dictionary<ResourceType, int>();
     }
 
-    public int getHunger() { return hunger; }
-
-    public int getCost() { return cost; }
-
-    public void collectResource(ResourcePile pile)
-    {
-        int amount = Mathf.Min(pile.getResourceAmount(), getSpace());
-        ResourceType resource = pile.collectResource(amount);
-        resources.Add(resource, amount);
+    public void CollectResource(ResourcePile pile) {
+        var amount = Mathf.Min(pile.ResourceAmount, GetSpace());
+        var collectedResourceType = pile.CollectResource(amount);
+        _resources.Add(collectedResourceType, amount);
     }
 
-    int getSpace() { return resourceCapacity - resources.Count; }
+    int GetSpace() => ResourceCapacity - _resources.Values.Sum();
 
-    public void dropResource(Castle castle)
-    {
-        castle.AddResources(this.resources);
-        this.resources.Clear();
+    public void DropResource(Castle castle) {
+        castle.AddResources(_resources);
+        _resources.Clear();
     }
 
     //public ResourceType getResource() { return resource; }
 
-    public bool hasResource() { return false; }
+    public bool IsFull() {
+        return GetSpace() == 0;
+    }
+
+    public bool IsEmpty() {
+        return GetSpace() == ResourceCapacity;
+    }
 }

@@ -1,63 +1,57 @@
-using System.Collections;
 using System.Collections.Generic;
+using ResourceLogic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Castle : MonoBehaviour
-{
+public class Castle : MonoBehaviour {
     public Text foodCount;
-    [SerializeField]
-    Dictionary<ResourceType, Text> textFields;
+    Dictionary<ResourceType, Text> _textFields;
 
-    Dictionary<ResourceType, int> resources;
-    int hunger = 0;
-    EntityManager unitManager;
+    readonly Dictionary<ResourceType, int> _resources = new Dictionary<ResourceType, int>();
+    const int Hunger = 0;
+    EntityManager _entityManager;
 
     // Start is called before the first frame update
-    void Start()
-    {
-        unitManager = new EntityManager();
-        resources = new Dictionary<ResourceType, int>();
+    void Start() {
+        _entityManager = new EntityManager();
 
-        InvokeRepeating("ConsumeFood", 1.0f, 4f);
+        InvokeRepeating(nameof(ConsumeFood), 1.0f, 4f);
 
         //stuff for testing
         SetResourceCount(ResourceType.Food, 1000);
         SetResourceCount(ResourceType.Metal, 100);
     }
 
-    void ChangeResourceCount(ResourceType resource, int change)
-    {
-        resources[resource] += change;
-        //textFields[resource].text = resources[resource].ToString();
-    }
-    void SetResourceCount(ResourceType resource, int newCount)
-    {
-        resources[resource] = newCount;
+    void ChangeResourceCount(ResourceType resource, int change) {
+        _resources[resource] += change;
         //textFields[resource].text = resources[resource].ToString();
     }
 
-    int GetResourceCount(ResourceType resource)
-    {
-        return resources[resource];
+    void SetResourceCount(ResourceType resource, int newCount) {
+        _resources[resource] = newCount;
+        //textFields[resource].text = resources[resource].ToString();
     }
 
-    public void AddResources(Dictionary<ResourceType, int> resources)
-    {
+    int GetResourceCount(ResourceType resource) {
+        return _resources[resource];
     }
 
-    void ConsumeFood()
-    {
-        Eat(hunger);
-    }
-
-    bool Eat(int food)
-    {
-        if (resources[(ResourceType.Food)] >= food)
-        {
-            ChangeResourceCount(ResourceType.Food, -food);
-            return true;
+    public void AddResources(Dictionary<ResourceType, int> resources) {
+        foreach (var pair in resources) {
+            _resources[pair.Key] += pair.Value;
         }
-        return false;
+    }
+
+    void ConsumeFood() {
+        Eat(Hunger);
+    }
+
+    bool Eat(int food) {
+        if (_resources[(ResourceType.Food)] < food) {
+            return false;
+        }
+
+        ChangeResourceCount(ResourceType.Food, -food);
+        return true;
     }
 }
