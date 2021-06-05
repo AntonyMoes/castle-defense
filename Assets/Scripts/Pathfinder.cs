@@ -25,7 +25,7 @@ public class Pathfinder : MonoBehaviour {
         if (!_destination) {
             return;
         }
-        
+
         var vector = _destination.position - _rb.transform.position;
         if (vector.magnitude <= delta) {
             Stop();

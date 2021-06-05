@@ -5,11 +5,12 @@
         }
 
         int _usages;
+
         public int Usages {
             get => _usages;
             set {
                 _usages = value;
-                
+
                 if (value == 0) {
                     _markedForDeath = true;
                 }
@@ -22,7 +23,7 @@
             if (!_markedForDeath) {
                 return;
             }
-            
+
             Destroy(gameObject);
         }
     }

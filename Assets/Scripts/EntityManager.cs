@@ -1,20 +1,18 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EntityManager {
-    List<GameObject> units = new List<GameObject>();
-    List<GameObject> enemies = new List<GameObject>();
-
-    public Unit AddUnit(Vector2 spawnPoint) {
-        return new Unit();
-    }
+public class EntityManager : Singleton<EntityManager> { // TODO: un-simpleton this class
+    readonly List<GameObject> _units = new List<GameObject>();
+    readonly List<GameObject> _enemies = new List<GameObject>();
 
     public GameObject GetNearestTarget(GameObject gameObject) {
-        if (gameObject.tag == "Enemy") {
-            return GetNearestTarget(gameObject, units);
-        } else if (gameObject.tag == "Unit") {
-            return GetNearestTarget(gameObject, enemies);
+        if (gameObject.CompareTag("Enemy")) {
+            return GetNearestTarget(gameObject, _units);
+        }
+
+        if (gameObject.CompareTag("Unit")) {
+            return GetNearestTarget(gameObject, _enemies);
         }
 
         return null;
@@ -35,15 +33,16 @@ public class EntityManager {
         return possibleTargets[ind];
     }
 
-    public void SpawnEntity(GameObject gameObject, Vector2 spawnPoint) {
-        if (gameObject.tag == "Enemy") {
-            enemies.Add(gameObject);
+    public void SpawnEntity(Func<GameObject> objectInstantiator) {
+        var gameObject = objectInstantiator();
+        if (gameObject.CompareTag("Enemy")) {
+            _enemies.Add(gameObject);
             Enemy enemy = gameObject.GetComponent<Enemy>();
-            enemy.OnDestroy += x => enemies.Remove(x.gameObject);
-        } else if (gameObject.tag == "Unit") {
-            units.Add(gameObject);
+            enemy.OnDestroy += x => _enemies.Remove(x.gameObject);
+        } else if (gameObject.CompareTag("Unit")) {
+            _units.Add(gameObject);
             Unit unit = gameObject.GetComponent<Unit>();
-            unit.OnDestroy += x => units.Remove(x.gameObject);
+            unit.OnDestroy += x => _units.Remove(x.gameObject);
         }
     }
 }

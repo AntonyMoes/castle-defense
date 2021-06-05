@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace PlayerInteraction {
     public class SelectedList : IList<Selectable> {
         readonly List<Selectable> _list = new List<Selectable>();
+
         public IEnumerator<Selectable> GetEnumerator() {
             return _list.GetEnumerator();
         }
@@ -20,6 +21,7 @@ namespace PlayerInteraction {
             if (item) {
                 item.ToggleSelection(true);
             }
+
             _list.Add(item);
         }
 
@@ -27,6 +29,7 @@ namespace PlayerInteraction {
             foreach (var selectable in _list) {
                 selectable.ToggleSelection(false);
             }
+
             _list.Clear();
         }
 
@@ -38,6 +41,7 @@ namespace PlayerInteraction {
             foreach (var selectable in array) {
                 selectable.ToggleSelection(true);
             }
+
             _list.CopyTo(array, arrayIndex);
         }
 
@@ -46,11 +50,13 @@ namespace PlayerInteraction {
             if (index != -1) {
                 _list[index].ToggleSelection(false);
             }
+
             return _list.Remove(item);
         }
 
         public int Count => _list.Count;
         public bool IsReadOnly => false;
+
         public int IndexOf(Selectable item) {
             return _list.IndexOf(item);
         }

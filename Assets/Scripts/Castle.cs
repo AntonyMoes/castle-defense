@@ -13,7 +13,7 @@ public class Castle : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
-        _entityManager = new EntityManager();
+        _entityManager = EntityManager.Instance;
 
         InvokeRepeating(nameof(ConsumeFood), 1.0f, 4f);
 

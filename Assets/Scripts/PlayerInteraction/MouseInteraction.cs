@@ -4,7 +4,7 @@ using UnityEngine;
 namespace PlayerInteraction {
     class MouseInteraction {
         const float DeltaPixels = 5;
-    
+
         readonly RectTransform _selectionBox;
         readonly Vector2 _startMousePosition;
         bool _finished;
@@ -13,7 +13,7 @@ namespace PlayerInteraction {
             _selectionBox = selectionBox;
             _startMousePosition = startMousePosition;
             _selectionBox.gameObject.SetActive(true);
-            
+
             UpdateSelection(_startMousePosition);
         }
 
@@ -27,7 +27,8 @@ namespace PlayerInteraction {
             _selectionBox.anchoredPosition = _startMousePosition + delta / 2;
         }
 
-        public void FinishSelection(bool addToSelection, Vector2 finalMousePosition, LayerMask interactionMask, Camera camera,
+        public void FinishSelection(bool addToSelection, Vector2 finalMousePosition, LayerMask interactionMask,
+            Camera camera,
             SelectedList selectedObjects) {
             if (_finished) {
                 return;
@@ -61,12 +62,13 @@ namespace PlayerInteraction {
                 if (!res) {
                     continue;
                 }
-            
+
                 selectedObjects.Add(selectable);
             }
         }
 
-        static void SelectOne(Vector2 mousePosition, LayerMask interactionMask, Camera camera, SelectedList selectedObjects) {
+        static void SelectOne(Vector2 mousePosition, LayerMask interactionMask, Camera camera,
+            SelectedList selectedObjects) {
             var (pos, size) = GetWorldValues(camera, mousePosition, new Vector2(DeltaPixels, DeltaPixels));
             var selectable = GetFirstWithComponent<Selectable>(pos, size, interactionMask);
             if (selectable != null) {
@@ -88,14 +90,15 @@ namespace PlayerInteraction {
             return pointTarget;
         }
 
-        static TComponent GetFirstWithComponent<TComponent>(Vector2 position, Vector2 areaSize, LayerMask interactionMask) where TComponent : class {
+        static TComponent GetFirstWithComponent<TComponent>(Vector2 position, Vector2 areaSize,
+            LayerMask interactionMask) where TComponent : class {
             var selected = Physics2D.BoxCastAll(position, areaSize, 0, Vector2.zero, 0, interactionMask);
             foreach (var hit2D in selected) {
                 var res = TryGetComponent<TComponent>(hit2D.transform, out var component);
                 if (!res) {
                     continue;
                 }
-                
+
                 return component;
             }
 
@@ -108,7 +111,7 @@ namespace PlayerInteraction {
             return (pos, size);
         }
 
-        static bool TryGetComponent<TComponent>(Transform obj, out TComponent component) where TComponent: class {
+        static bool TryGetComponent<TComponent>(Transform obj, out TComponent component) where TComponent : class {
             if (obj.parent) {
                 return obj.parent.TryGetComponent(out component);
             }

@@ -1,13 +1,13 @@
 using UnityEngine;
 
-public class Spawner : MonoBehaviour {
+public class Spawner : MonoBehaviour { // TODO: BURN
     [SerializeField] GameObject enemyObject;
     [SerializeField] GameObject unitObject;
     [SerializeField] bool isManual;
 
     Vector2 _spawnPoint;
     const float SpawnRate = 4.0f;
-    readonly EntityManager _entityManager = new EntityManager();
+    readonly EntityManager _entityManager = EntityManager.Instance;
 
     void Start() {
         var localPosition = gameObject.transform.localPosition;
@@ -19,13 +19,15 @@ public class Spawner : MonoBehaviour {
     }
 
     void SpawnEnemy() {
-        var enemy = Instantiate(enemyObject, _spawnPoint, Quaternion.identity);
-        _entityManager.SpawnEntity(enemy, _spawnPoint);
+        _entityManager.SpawnEntity(() => InstantiatePrefab(enemyObject));
     }
 
     void SpawnUnit() {
-        var unit = Instantiate(unitObject, _spawnPoint, Quaternion.identity);
-        _entityManager.SpawnEntity(unit, _spawnPoint);
+        _entityManager.SpawnEntity(() => InstantiatePrefab(unitObject));
+    }
+
+    GameObject InstantiatePrefab(GameObject prefab) {
+        return Instantiate(prefab, _spawnPoint, Quaternion.identity);
     }
 
     public void Spawn() {
