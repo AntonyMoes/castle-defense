@@ -15,7 +15,8 @@ public class PlayerSelection : MonoBehaviour {
             _currentSelection.UpdateSelection(Input.mousePosition);
         }
         if (Input.GetButtonUp("Mouse Left")) {
-            _currentSelection.FinishSelection(Input.mousePosition, selectionMask, camera, ref _selectedObjects);
+            var addToSelection = Input.GetKey(KeyCode.LeftControl);
+            _currentSelection.FinishSelection(addToSelection, Input.mousePosition, selectionMask, camera, ref _selectedObjects);
         }
     }
 }

@@ -12,6 +12,10 @@ public class SelectedList : IList<Selectable> {
     }
 
     public void Add(Selectable item) {
+        if (Contains(item)) {
+            return;
+        }
+
         if (item) {
             item.ToggleSelection(true);
         }

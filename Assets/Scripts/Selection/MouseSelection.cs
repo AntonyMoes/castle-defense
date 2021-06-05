@@ -25,14 +25,17 @@ class MouseSelection {
         _selectionBox.anchoredPosition = _startMousePosition + delta / 2;
     }
 
-    public void FinishSelection(Vector2 finalMousePosition, LayerMask selectionMask, Camera camera, ref SelectedList selectedObjects) {
+    public void FinishSelection(bool addToSelection, Vector2 finalMousePosition, LayerMask selectionMask, Camera camera,
+        ref SelectedList selectedObjects) {
         if (_finished) {
             return;
         }
-            
+
         _finished = true;
         _selectionBox.gameObject.SetActive(false);
-        selectedObjects.Clear();
+        if (!addToSelection) {
+            selectedObjects.Clear();
+        }
 
         if ((finalMousePosition - _startMousePosition).magnitude < DeltaPixels) {
             SelectOne(finalMousePosition, selectionMask, camera, ref selectedObjects);
