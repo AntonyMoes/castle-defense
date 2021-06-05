@@ -2,36 +2,42 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Unit : MonoBehaviour
+public class Unit : Entity
 {
-    Resource resource = Resource.Empty;
-    Vector2 destination;
+    Dictionary<ResourceType, int> resources;
     int hunger = 1;
     int cost = 3;
+    int resourceCapacity = 3;
 
-    public int getHunger()
+    int resourceRange;
+
+    public int getResourceRange() { return resourceRange; }
+
+    private void Start()
     {
-        return hunger;
+        resources = new Dictionary<ResourceType, int>();
     }
 
-    public int getCost()
-    {
-        return cost;
-    }
+    public int getHunger() { return hunger; }
 
-    public void setDestination(Vector2 destination)
-    {
-        this.destination = destination;
-    }
+    public int getCost() { return cost; }
 
     public void collectResource(ResourcePile pile)
     {
-        resource = pile.getResource();
+        int amount = Mathf.Min(pile.getResourceAmount(), getSpace());
+        ResourceType resource = pile.collectResource(amount);
+        resources.Add(resource, amount);
     }
+
+    int getSpace() { return resourceCapacity - resources.Count; }
 
     public void dropResource(Castle castle)
     {
-        castle.addResource(this.resource);
-        this.resource = Resource.Empty;
+        castle.AddResources(this.resources);
+        this.resources.Clear();
     }
+
+    //public ResourceType getResource() { return resource; }
+
+    public bool hasResource() { return false; }
 }
