@@ -24,7 +24,7 @@ public class Entity : MonoBehaviour
     public float getMovementSpeed() { return movementSpeed; }
 
     private void Start()
-    {   
+    {
         // hpSlider.maxValue = maxHP;
         // hpSlider.value = hp;
         // hpSlider.interactable = false;
@@ -44,14 +44,18 @@ public class Entity : MonoBehaviour
         onDestroy(this);
         GameObject.Destroy(this, 0.2f);
     }
-    public void Attack(Entity entity)
+    public bool Attack(Entity entity)
     {
         if (currentCD == 0)
         {
             entity.ReduceHP(damage);
             currentCD = attackCD;
+            return true;
         }
+        return false;
     }
+
+    public float GetCD() { return currentCD; }
 
     void ReduceHP(int amount)
     {
