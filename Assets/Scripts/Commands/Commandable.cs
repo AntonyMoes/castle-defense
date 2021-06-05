@@ -2,7 +2,7 @@
 using UnityEngine;
 
 namespace Commands {
-    public abstract class Commandable : MonoBehaviour{
+    public class Commandable : MonoBehaviour{
         Command _currentCommand;
         public Command CurrentCommand {
             get => _currentCommand;
@@ -15,10 +15,7 @@ namespace Commands {
         public Action<Command> OnCommand;
 
         public void AcquireCommand(CommandTargetable target) {
-            var command = AcquireCommandLogic(target);
-            CurrentCommand = command;
+            CurrentCommand = new Command(target);
         }
-
-        protected abstract Command AcquireCommandLogic(CommandTargetable target);
     }
 }

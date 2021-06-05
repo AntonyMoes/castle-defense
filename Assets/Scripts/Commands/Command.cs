@@ -2,12 +2,12 @@
 
 namespace Commands {
     public class Command {
-        public readonly CommandType Type;
+        public readonly CommandTargetType TargetType;
         public readonly GameObject Target;
         readonly PointTarget _pointTarget;
 
-        public Command(CommandType type, CommandTargetable target) {
-            Type = type;
+        public Command(CommandTargetable target) {
+            TargetType = target.type;
             Target = target.gameObject;
             _pointTarget = target as PointTarget;
             if (_pointTarget) {
