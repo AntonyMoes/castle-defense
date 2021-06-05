@@ -1,43 +1,49 @@
-using System.Collections;
 using System.Collections.Generic;
+using Commands;
 using UnityEngine;
 
-public class UnitAI : MonoBehaviour
-{
+public class UnitAI : MonoBehaviour {
     [SerializeField] GameObject castle;
     Commandable commandable;
-
     GameObject target;
 
     NodeStates SetTargetEnemy() {
-        commandable.AcquireCommand(target);
+        commandable.CurrentCommand = new Command(target);
         return NodeStates.SUCCESS;
     }
 
     NodeStates SetTargetCastle() {
-        commandable.AcquireCommand(castle);
+        commandable.CurrentCommand = new Command(castle);
         return NodeStates.SUCCESS;
     }
 
     NodeStates DeleteCommand() {
-        commandable.AcquireCommand(null);
+        commandable.CurrentCommand = null;
         return NodeStates.SUCCESS;
     }
 
     NodeStates TargetResource() {
-        return commandable.CurrentCommand == CommandTargetType.Resource ? NodeStates.SUCCESS : NodeStates.FAILURE;
+        return commandable.CurrentCommand.TargetType == CommandTargetType.Resource
+            ? NodeStates.SUCCESS
+            : NodeStates.FAILURE;
     }
 
     NodeStates TargetEnemy() {
-        return commandable.CurrentCommand == CommandTargetType.Enemy ? NodeStates.SUCCESS : NodeStates.FAILURE;
+        return commandable.CurrentCommand.TargetType == CommandTargetType.Enemy
+            ? NodeStates.SUCCESS
+            : NodeStates.FAILURE;
     }
 
     NodeStates TargetCastle() {
-        return commandable.CurrentCommand == CommandTargetType.Castle ? NodeStates.SUCCESS : NodeStates.FAILURE;
+        return commandable.CurrentCommand.TargetType == CommandTargetType.Castle
+            ? NodeStates.SUCCESS
+            : NodeStates.FAILURE;
     }
 
     NodeStates TargetPoint() {
-        return commandable.CurrentCommand == CommandTargetType.Point ? NodeStates.SUCCESS : NodeStates.FAILURE;
+        return commandable.CurrentCommand.TargetType == CommandTargetType.Point
+            ? NodeStates.SUCCESS
+            : NodeStates.FAILURE;
     }
 
     NodeStates MoveToTarget() {
@@ -45,10 +51,11 @@ public class UnitAI : MonoBehaviour
         return NodeStates.SUCCESS;
     }
 
-    NodeStates TargetNull() {
-        if (commandable.CurrentCommand.Target == null) {
+    NodeStates CommandNull() {
+        if (commandable.CurrentCommand == null) {
             return NodeStates.SUCCESS;
         }
+
         return NodeStates.FAILURE;
     }
 
@@ -78,8 +85,9 @@ public class UnitAI : MonoBehaviour
     // Если не вышел, то -> SUCCESS
     // Иначе FAILURE
     NodeStates EnemyVisible() {
-        if (target == null || target.tag != "Enemy") {
-            target = GetNearestTarget(this.gameObject);
+        if (target == null || !target.CompareTag("Enemy")) {
+            target = EntityManager.Instance
+                .GetNearestTarget(gameObject); // TODO: EXPLICITLY provide functionality to get nearest enemy
         }
 
         if (Vector3.Distance(transform.position, target.transform.position) < 3) {
@@ -98,68 +106,69 @@ public class UnitAI : MonoBehaviour
         return NodeStates.FAILURE;
     }
 
-    Node root;
+    Node _root;
 
-    void Start()
-    {
+    void Start() {
         target = castle;
         commandable = gameObject.GetComponent<Commandable>();
 
-        ActionNode setEnemy = new ActionNode(SetTargetEnemy);
-        ActionNode setCastle = new ActionNode(SetTargetCastle);
-        ActionNode deleteCommand = new ActionNode(DeleteCommand);
+        var setEnemy = new ActionNode(SetTargetEnemy);
+        var setCastle = new ActionNode(SetTargetCastle);
+        var deleteCommand = new ActionNode(DeleteCommand);
 
-        ActionNode castle = new ActionNode(TargetCastle);
-        ActionNode enemy = new ActionNode(TargetEnemy);
-        ActionNode resource = new ActionNode(TargetResource);
-        ActionNode point = new ActionNode(TargetPoint);
-        ActionNode targetNull = new ActionNode(TargetNull);
+        var targetCastle = new ActionNode(TargetCastle);
+        var enemy = new ActionNode(TargetEnemy);
+        var resource = new ActionNode(TargetResource);
+        var point = new ActionNode(TargetPoint);
+        var targetNull = new ActionNode(CommandNull);
 
-        ActionNode moveTo = new ActionNode(MoveToTarget);
-        ActionNode inAttackRange = new ActionNode(TargetInAttackRange);
-        ActionNode inInteractionRange = new ActionNode(TargetInInteractionRange);
+        var moveTo = new ActionNode(MoveToTarget);
+        var inAttackRange = new ActionNode(TargetInAttackRange);
+        var inInteractionRange = new ActionNode(TargetInInteractionRange);
 
-        ActionNode hasResource = new ActionNode(HasResource);
-        ActionNode collectResource = new ActionNode(CollectResource);
-        ActionNode dropResource = new ActionNode(DropResource);
+        var hasResource = new ActionNode(HasResource);
+        var collectResource = new ActionNode(CollectResource);
+        var dropResource = new ActionNode(DropResource);
 
-        ActionNode visible = new ActionNode(EnemyVisible);
-        ActionNode attack = new ActionNode(Attack);
-        ActionNode wait = new ActionNode(Wait);
+        var visible = new ActionNode(EnemyVisible);
+        var attack = new ActionNode(Attack);
+        var wait = new ActionNode(Wait);
 
 
-        Sequence goToPointCommand = new Sequence(new List<Node>{point, moveTo, inInteractionRange, deleteCommand});
+        var goToPointCommand = new Sequence(new List<Node> {point, moveTo, inInteractionRange, deleteCommand});
 
-        Sequence targetNullDropCommand = new Sequence(new List<Node>{targetNull, deleteCommand});
-        Selector attackOrWait = new Selector(new List<Node>{attack, wait});
-        Sequence fight = new Sequence(new List<Node>{inAttackRange, attackOrWait});
+        var targetNullDropCommand = new Sequence(new List<Node> {targetNull, deleteCommand});
+        var attackOrWait = new Selector(new List<Node> {attack, wait});
+        var fight = new Sequence(new List<Node> {inAttackRange, attackOrWait});
 
-        Sequence fightEnemyCommand = new Sequence(new List<Node>{enemy, fight, moveTo});
+        var fightEnemyCommand = new Sequence(new List<Node> {enemy, fight, moveTo});
 
-        Selector targetNullOrHasResource = new Selector(new List<Node>{targetNull, hasResource});
-        Sequence canCollectResourceOrDrop= new Sequence(new List<Node>{targetNullOrHasResource, deleteCommand});
-        Sequence collectResourceIfInRange = new Sequence(new List<Node>{inInteractionRange, collectResource, setCastle});
-        Selector collectOrMoveToResource = new Selector(new List<Node>{collectResourceIfInRange, moveTo});
+        var targetNullOrHasResource = new Selector(new List<Node> {targetNull, hasResource});
+        var canCollectResourceOrDrop = new Sequence(new List<Node> {targetNullOrHasResource, deleteCommand});
+        var collectResourceIfInRange = new Sequence(new List<Node> {inInteractionRange, collectResource, setCastle});
+        var collectOrMoveToResource = new Selector(new List<Node> {collectResourceIfInRange, moveTo});
 
-        Sequence collectResourceCommand = new Sequence(new List<Node>{resource, canCollectResourceOrDrop, collectOrMoveToResource});
+        var collectResourceCommand = new Sequence(new List<Node>
+            {resource, canCollectResourceOrDrop, collectOrMoveToResource});
 
-        Sequence noResourceDrop = new Sequence(new List<Node>{new Inverter(hasResource), deleteCommand});
-        Sequence dropResourceIfInRange = new Sequence(new List<Node>{inInteractionRange, dropResource, deleteCommand});
-        Selector dropResourceOrMoveToCastle = new Selector(new List<Node>{dropResourceIfInRange, moveTo});
+        var noResourceDrop = new Sequence(new List<Node> {new Inverter(hasResource), deleteCommand});
+        var dropResourceIfInRange = new Sequence(new List<Node> {inInteractionRange, dropResource, deleteCommand});
+        var dropResourceOrMoveToCastle = new Selector(new List<Node> {dropResourceIfInRange, moveTo});
 
-        Sequence dropResourceCommand = new Sequence(new List<Node>{castle, noResourceDrop, dropResourceOrMoveToCastle});
+        var dropResourceCommand =
+            new Sequence(new List<Node> {targetCastle, noResourceDrop, dropResourceOrMoveToCastle});
 
-        Sequence hasResourceSetCommand = new Sequence(new List<Node>{hasResource, setCastle});
-        Sequence hasEnemySetCommand = new Sequence(new List<Node>{visible, enemy});
+        var hasResourceSetCommand = new Sequence(new List<Node> {hasResource, setCastle});
+        var hasEnemySetCommand = new Sequence(new List<Node> {visible, enemy});
 
-        Selector noCommand = new Selector(new List<Node>{hasResourceSetCommand, hasEnemySetCommand});
+        var noCommand = new Selector(new List<Node> {hasResourceSetCommand, hasEnemySetCommand});
 
-        root = new Selector(new List<Node>{goToPointCommand, fightEnemyCommand, collectResourceCommand, dropResourceCommand, noCommand});
+        _root = new Selector(new List<Node>
+            {goToPointCommand, fightEnemyCommand, collectResourceCommand, dropResourceCommand, noCommand});
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        root.Evaluate();
+    void Update() {
+        _root.Evaluate();
     }
 }
