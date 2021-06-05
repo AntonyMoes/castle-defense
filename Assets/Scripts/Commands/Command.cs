@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Commands {
     public class Command {
@@ -7,6 +8,10 @@ namespace Commands {
         readonly PointTarget _pointTarget;
 
         public Command(CommandTargetable target) {
+            if (target == null) {
+                throw new ArgumentException("Provided object is not targetable");
+            }
+
             TargetType = target.type;
             Target = target.gameObject;
             _pointTarget = target as PointTarget;
@@ -14,6 +19,8 @@ namespace Commands {
                 _pointTarget.Usages++;
             }
         }
+
+        public Command(GameObject target) : this(target.GetComponent<CommandTargetable>()) { }
 
         ~Command() {
             if (_pointTarget) {
